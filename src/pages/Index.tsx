@@ -23,7 +23,22 @@ const Index = () => {
       score: 92,
       description: "Technical skills align well with requirements",
       icon: Target,
-      skills: ["React", "TypeScript", "Node.js", "GraphQL", "AWS"]
+      skills: ["React", "TypeScript", "Node.js", "GraphQL", "AWS"],
+      detailedAnalysis: {
+        title: "Technical Skills Analysis",
+        subtitle: "Technical skills align well with requirements",
+        matchedSkills: ["React.js", "Node.js", "TypeScript", "AWS", "Docker", "PostgreSQL", "GraphQL", "Kubernetes"],
+        frontendTechnologies: [
+          { name: "React.js", level: "Expert", color: "green" },
+          { name: "TypeScript", level: "Advanced", color: "green" },
+          { name: "Vue.js", level: "Intermediate", color: "yellow" }
+        ],
+        backendInfrastructure: [
+          { name: "Node.js", level: "Expert", color: "green" },
+          { name: "AWS", level: "Advanced", color: "green" },
+          { name: "Docker", level: "Advanced", color: "green" }
+        ]
+      }
     },
     {
       title: "Semantic Scoring",
@@ -67,6 +82,14 @@ const Index = () => {
     if (score >= 70) return "Strong Match";
     if (score >= 50) return "Good Potential";
     return "Needs Review";
+  };
+
+  const getLevelIndicatorColor = (color: string) => {
+    switch(color) {
+      case "green": return "bg-green-500";
+      case "yellow": return "bg-yellow-500";
+      default: return "bg-gray-500";
+    }
   };
 
   return (
@@ -168,26 +191,101 @@ const Index = () => {
                       <span className="text-2xl font-bold text-warmBrown-700">{item.score}%</span>
                     </div>
                     
-                    <div className="w-full bg-brownBeige-50 rounded-full h-3 overflow-hidden">
-                      <div 
-                        className={`h-full bg-gradient-to-r ${getScoreColor(item.score)} transition-all duration-1000 ease-out rounded-full`}
-                        style={{ width: `${item.score}%` }}
-                      />
-                    </div>
+                    {/* Enhanced Skill Match Section */}
+                    {item.detailedAnalysis && (
+                      <div className="space-y-4 border-l-4 border-warmBrown-300 pl-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-warmBrown-600 flex items-center justify-center">
+                            <Target className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <h5 className="font-semibold text-gray-900">{item.detailedAnalysis.title}</h5>
+                            <p className="text-sm text-gray-600">{item.detailedAnalysis.subtitle}</p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h6 className="font-medium text-gray-900 mb-2">Match Score</h6>
+                          <div className="w-full bg-brownBeige-50 rounded-full h-3 overflow-hidden mb-2">
+                            <div 
+                              className={`h-full bg-gradient-to-r ${getScoreColor(item.score)} transition-all duration-1000 ease-out rounded-full`}
+                              style={{ width: `${item.score}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <h6 className="font-medium text-gray-900 mb-3">Matched Skills</h6>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {item.detailedAnalysis.matchedSkills.map((skill, skillIndex) => (
+                              <Badge 
+                                key={skillIndex} 
+                                className="bg-brownBeige-200 text-warmBrown-800 hover:bg-brownBeige-300 transition-colors"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                          <div className="bg-brownBeige-25 p-4 rounded-lg">
+                            <h6 className="font-medium text-gray-900 mb-3">Frontend Technologies</h6>
+                            <div className="space-y-2">
+                              {item.detailedAnalysis.frontendTechnologies.map((tech, techIndex) => (
+                                <div key={techIndex} className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${getLevelIndicatorColor(tech.color)}`}></div>
+                                    <span className="text-sm text-gray-700">{tech.name}</span>
+                                  </div>
+                                  <span className="text-xs text-gray-500">({tech.level})</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="bg-brownBeige-25 p-4 rounded-lg">
+                            <h6 className="font-medium text-gray-900 mb-3">Backend & Infrastructure</h6>
+                            <div className="space-y-2">
+                              {item.detailedAnalysis.backendInfrastructure.map((tech, techIndex) => (
+                                <div key={techIndex} className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className={`w-2 h-2 rounded-full ${getLevelIndicatorColor(tech.color)}`}></div>
+                                    <span className="text-sm text-gray-700">{tech.name}</span>
+                                  </div>
+                                  <span className="text-xs text-gray-500">({tech.level})</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     
-                    <p className="text-gray-600">{item.description}</p>
-                    
-                    <div className="flex flex-wrap gap-2">
-                      {item.skills.map((skill, skillIndex) => (
-                        <Badge 
-                          key={skillIndex} 
-                          variant="secondary" 
-                          className="bg-brownBeige-100 text-warmBrown-800 hover:bg-brownBeige-200 transition-colors"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
-                    </div>
+                    {!item.detailedAnalysis && (
+                      <>
+                        <div className="w-full bg-brownBeige-50 rounded-full h-3 overflow-hidden">
+                          <div 
+                            className={`h-full bg-gradient-to-r ${getScoreColor(item.score)} transition-all duration-1000 ease-out rounded-full`}
+                            style={{ width: `${item.score}%` }}
+                          />
+                        </div>
+                        
+                        <p className="text-gray-600">{item.description}</p>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          {item.skills.map((skill, skillIndex) => (
+                            <Badge 
+                              key={skillIndex} 
+                              variant="secondary" 
+                              className="bg-brownBeige-100 text-warmBrown-800 hover:bg-brownBeige-200 transition-colors"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
