@@ -56,9 +56,9 @@ const Index = () => {
   ]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return "from-amber-700 to-amber-800";
-    if (score >= 70) return "from-amber-600 to-amber-700";
-    if (score >= 50) return "from-amber-500 to-amber-600";
+    if (score >= 90) return "from-warmBrown-700 to-warmBrown-800";
+    if (score >= 70) return "from-warmBrown-600 to-warmBrown-700";
+    if (score >= 50) return "from-brownBeige-500 to-brownBeige-600";
     return "from-gray-400 to-gray-500";
   };
 
@@ -70,7 +70,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-cream-100 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-brownBeige-50 to-cream-100 p-6">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="text-center space-y-4">
@@ -79,7 +79,7 @@ const Index = () => {
           </h1>
           <p className="text-xl text-gray-600">
             AI-powered analysis of candidate fit for{" "}
-            <span className="font-semibold text-amber-700">{candidateData.jobTitle}</span> position
+            <span className="font-semibold text-warmBrown-700">{candidateData.jobTitle}</span> position
           </p>
         </div>
 
@@ -87,7 +87,7 @@ const Index = () => {
         <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-200 to-amber-300 flex items-center justify-center text-2xl font-bold text-amber-800">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brownBeige-200 to-brownBeige-300 flex items-center justify-center text-2xl font-bold text-warmBrown-800">
                 {candidateData.name.split(' ').map(n => n[0]).join('')}
               </div>
               
@@ -103,7 +103,7 @@ const Index = () => {
               
               <Button 
                 variant="outline" 
-                className="border-amber-600 text-amber-700 hover:bg-amber-50 transition-colors"
+                className="border-warmBrown-600 text-warmBrown-700 hover:bg-brownBeige-50 transition-colors"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download Resume
@@ -125,7 +125,7 @@ const Index = () => {
                     stroke="currentColor"
                     strokeWidth="8"
                     fill="transparent"
-                    className="text-amber-100"
+                    className="text-brownBeige-100"
                   />
                   <circle
                     cx="50"
@@ -136,17 +136,17 @@ const Index = () => {
                     fill="transparent"
                     strokeDasharray={`${2 * Math.PI * 40}`}
                     strokeDashoffset={`${2 * Math.PI * 40 * (1 - overallScore / 100)}`}
-                    className="text-amber-700 transition-all duration-1000 ease-out"
+                    className="text-warmBrown-700 transition-all duration-1000 ease-out"
                     strokeLinecap="round"
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-3xl font-bold text-amber-700">{overallScore}%</span>
+                  <span className="text-3xl font-bold text-warmBrown-700">{overallScore}%</span>
                 </div>
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-gray-900">Overall Match Score</h3>
-                <p className="text-lg font-medium text-amber-700">{getStatusText(overallScore)}</p>
+                <p className="text-lg font-medium text-warmBrown-700">{getStatusText(overallScore)}</p>
               </div>
             </div>
           </CardContent>
@@ -158,17 +158,17 @@ const Index = () => {
             <Card key={index} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-amber-100">
-                    <item.icon className="w-6 h-6 text-amber-700" />
+                  <div className="p-3 rounded-lg bg-brownBeige-100">
+                    <item.icon className="w-6 h-6 text-warmBrown-700" />
                   </div>
                   
                   <div className="flex-1 space-y-4">
                     <div className="flex justify-between items-center">
                       <h4 className="text-xl font-semibold text-gray-900">{item.title}</h4>
-                      <span className="text-2xl font-bold text-amber-700">{item.score}%</span>
+                      <span className="text-2xl font-bold text-warmBrown-700">{item.score}%</span>
                     </div>
                     
-                    <div className="w-full bg-amber-50 rounded-full h-3 overflow-hidden">
+                    <div className="w-full bg-brownBeige-50 rounded-full h-3 overflow-hidden">
                       <div 
                         className={`h-full bg-gradient-to-r ${getScoreColor(item.score)} transition-all duration-1000 ease-out rounded-full`}
                         style={{ width: `${item.score}%` }}
@@ -182,7 +182,7 @@ const Index = () => {
                         <Badge 
                           key={skillIndex} 
                           variant="secondary" 
-                          className="bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+                          className="bg-brownBeige-100 text-warmBrown-800 hover:bg-brownBeige-200 transition-colors"
                         >
                           {skill}
                         </Badge>
@@ -199,14 +199,14 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
             size="lg" 
-            className="bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-800 hover:to-amber-900 text-white px-8 py-3 text-lg transition-all duration-200 hover:scale-105"
+            className="bg-gradient-to-r from-warmBrown-700 to-warmBrown-800 hover:from-warmBrown-800 hover:to-warmBrown-900 text-white px-8 py-3 text-lg transition-all duration-200 hover:scale-105"
           >
             Compare Candidates
           </Button>
           <Button 
             variant="outline" 
             size="lg"
-            className="border-amber-600 text-amber-700 hover:bg-amber-50 px-8 py-3 text-lg transition-all duration-200 hover:scale-105"
+            className="border-warmBrown-600 text-warmBrown-700 hover:bg-brownBeige-50 px-8 py-3 text-lg transition-all duration-200 hover:scale-105"
           >
             Add Notes
           </Button>
