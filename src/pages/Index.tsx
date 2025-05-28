@@ -45,28 +45,118 @@ const Index = () => {
       score: 85,
       description: "Resume content matches job description context",
       icon: Brain,
-      skills: ["Frontend Architecture", "API Integration", "Performance Optimization"]
+      skills: ["Frontend Architecture", "API Integration", "Performance Optimization"],
+      detailedAnalysis: {
+        title: "Content Analysis",
+        subtitle: "Resume content matches job description context",
+        keywordAlignment: "Strong correlation between resume terminology and job requirements. Technical vocabulary demonstrates deep understanding of role expectations.",
+        highMatchKeywords: ["full-stack development", "scalable architecture", "microservices", "agile methodology", "cloud deployment"],
+        partialMatchKeywords: ["team leadership", "performance optimization", "code review", "CI/CD pipeline"],
+        contextRelevance: "Resume demonstrates contextual understanding of senior-level responsibilities with appropriate technical depth and business impact focus."
+      }
     },
     {
       title: "Project Relevancy",
       score: 78,
       description: "Projects demonstrate applicable experience",
       icon: FileText,
-      skills: ["E-commerce Platform", "Real-time Dashboard", "Mobile-first SPA"]
+      skills: ["E-commerce Platform", "Real-time Dashboard", "Mobile-first SPA"],
+      detailedAnalysis: {
+        title: "Experience Analysis",
+        subtitle: "Projects demonstrate applicable experience",
+        mostRelevantProjects: [
+          {
+            name: "E-commerce Platform Redesign",
+            match: 95,
+            description: "Led full-stack development of scalable microservices architecture serving 2M+ users",
+            technologies: ["React", "Node.js", "AWS"]
+          },
+          {
+            name: "Real-time Analytics Dashboard",
+            match: 82,
+            description: "Built high-performance data visualization platform with real-time streaming capabilities",
+            technologies: ["TypeScript", "GraphQL", "Docker"]
+          },
+          {
+            name: "Mobile Banking Application",
+            match: 75,
+            description: "Developed secure financial services app with biometric authentication and fraud detection",
+            technologies: ["React Native", "Security", "API Design"]
+          }
+        ],
+        impactAnalysis: "Strong portfolio demonstrating progressive responsibility and technical leadership. Projects show direct relevance to senior engineering role requirements."
+      }
     },
     {
       title: "Educational Background",
       score: 90,
       description: "Education meets position requirements",
       icon: GraduationCap,
-      skills: ["B.S. Computer Science", "Stanford University", "Machine Learning Coursework"]
+      skills: ["B.S. Computer Science", "Stanford University", "Machine Learning Coursework"],
+      detailedAnalysis: {
+        title: "Academic Qualifications",
+        subtitle: "Education meets position requirements",
+        degrees: [
+          {
+            degree: "Master of Science in Computer Science",
+            institution: "Stanford University",
+            period: "2018 - 2020",
+            gpa: "3.8/4.0",
+            match: "Excellent Match",
+            coursework: ["Advanced Algorithms", "Distributed Systems", "Machine Learning", "Software Architecture"]
+          },
+          {
+            degree: "Bachelor of Science in Software Engineering",
+            institution: "University of California, Berkeley",
+            period: "2014 - 2018",
+            gpa: "3.7/4.0",
+            match: "Strong Match",
+            achievements: ["Dean's List for 6 consecutive semesters", "Senior Capstone Project: Real-time Collaboration Platform", "President, Computer Science Student Association"]
+          }
+        ],
+        certifications: [
+          { name: "AWS Solutions Architect", level: "Professional Level", year: "2022" },
+          { name: "Google Cloud Professional", level: "Cloud Architect", year: "2023" }
+        ]
+      }
     },
     {
       title: "Interpersonal Skills",
       score: 72,
       description: "Communication and teamwork indicators present",
       icon: Users,
-      skills: ["Team Leadership", "Cross-functional Collaboration", "Mentoring"]
+      skills: ["Team Leadership", "Cross-functional Collaboration", "Mentoring"],
+      detailedAnalysis: {
+        title: "Soft Skills Assessment",
+        subtitle: "Communication and teamwork indicators present",
+        identifiedSkills: {
+          strongEvidence: [
+            { skill: "Leadership", score: 85, description: "Led cross-functional teams of 8+ developers across multiple projects" },
+            { skill: "Problem Solving", score: 82, description: "Resolved complex technical challenges and optimized system performance" },
+            { skill: "Communication", score: 78, description: "Presented technical solutions to stakeholders and conducted code reviews" }
+          ],
+          moderateEvidence: [
+            { skill: "Teamwork", score: 68, description: "Collaborated effectively in agile development environments" },
+            { skill: "Adaptability", score: 65, description: "Successfully adapted to new technologies and methodologies" },
+            { skill: "Time Management", score: 62, description: "Managed multiple project deadlines and deliverables" }
+          ]
+        },
+        evidenceSources: [
+          {
+            skill: "Leadership Experience",
+            evidence: "Led cross-functional teams of 8+ developers across multiple projects"
+          },
+          {
+            skill: "Communication Skills",
+            evidence: "Presented technical solutions to stakeholders and conducted code reviews"
+          },
+          {
+            skill: "Problem Solving",
+            evidence: "Resolved complex technical challenges and optimized system performance"
+          }
+        ],
+        softSkillsPortfolio: ["Team Leadership", "Technical Communication", "Mentoring", "Cross-functional Collaboration", "Stakeholder Management", "Conflict Resolution", "Project Coordination"]
+      }
     }
   ]);
 
@@ -191,12 +281,12 @@ const Index = () => {
                       <span className="text-2xl font-bold text-warmBrown-700">{item.score}%</span>
                     </div>
                     
-                    {/* Enhanced Skill Match Section */}
+                    {/* Enhanced sections for all categories */}
                     {item.detailedAnalysis && (
                       <div className="space-y-4 border-l-4 border-warmBrown-300 pl-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-warmBrown-600 flex items-center justify-center">
-                            <Target className="w-4 h-4 text-white" />
+                            <item.icon className="w-4 h-4 text-white" />
                           </div>
                           <div>
                             <h5 className="font-semibold text-gray-900">{item.detailedAnalysis.title}</h5>
@@ -214,51 +304,271 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div>
-                          <h6 className="font-medium text-gray-900 mb-3">Matched Skills</h6>
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {item.detailedAnalysis.matchedSkills.map((skill, skillIndex) => (
-                              <Badge 
-                                key={skillIndex} 
-                                className="bg-brownBeige-200 text-warmBrown-800 hover:bg-brownBeige-300 transition-colors"
-                              >
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
+                        {/* Skill Match Details */}
+                        {item.title === "Skill Match" && (
+                          <>
+                            <div>
+                              <h6 className="font-medium text-gray-900 mb-3">Matched Skills</h6>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {item.detailedAnalysis.matchedSkills.map((skill, skillIndex) => (
+                                  <Badge 
+                                    key={skillIndex} 
+                                    className="bg-brownBeige-200 text-warmBrown-800 hover:bg-brownBeige-300 transition-colors"
+                                  >
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div className="bg-brownBeige-25 p-4 rounded-lg">
-                            <h6 className="font-medium text-gray-900 mb-3">Frontend Technologies</h6>
-                            <div className="space-y-2">
-                              {item.detailedAnalysis.frontendTechnologies.map((tech, techIndex) => (
-                                <div key={techIndex} className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${getLevelIndicatorColor(tech.color)}`}></div>
-                                    <span className="text-sm text-gray-700">{tech.name}</span>
+                            <div className="grid md:grid-cols-2 gap-6">
+                              <div className="bg-brownBeige-25 p-4 rounded-lg">
+                                <h6 className="font-medium text-gray-900 mb-3">Frontend Technologies</h6>
+                                <div className="space-y-2">
+                                  {item.detailedAnalysis.frontendTechnologies.map((tech, techIndex) => (
+                                    <div key={techIndex} className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${getLevelIndicatorColor(tech.color)}`}></div>
+                                        <span className="text-sm text-gray-700">{tech.name}</span>
+                                      </div>
+                                      <span className="text-xs text-gray-500">({tech.level})</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="bg-brownBeige-25 p-4 rounded-lg">
+                                <h6 className="font-medium text-gray-900 mb-3">Backend & Infrastructure</h6>
+                                <div className="space-y-2">
+                                  {item.detailedAnalysis.backendInfrastructure.map((tech, techIndex) => (
+                                    <div key={techIndex} className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <div className={`w-2 h-2 rounded-full ${getLevelIndicatorColor(tech.color)}`}></div>
+                                        <span className="text-sm text-gray-700">{tech.name}</span>
+                                      </div>
+                                      <span className="text-xs text-gray-500">({tech.level})</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+
+                        {/* Semantic Scoring Details */}
+                        {item.title === "Semantic Scoring" && (
+                          <div className="space-y-4">
+                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                              <div className="flex items-center justify-between mb-2">
+                                <h6 className="font-medium text-gray-900">Keyword Alignment Analysis</h6>
+                                <Badge className="bg-blue-100 text-blue-800">Division</Badge>
+                              </div>
+                              <p className="text-sm text-gray-700 mb-4">{item.detailedAnalysis.keywordAlignment}</p>
+                              
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                  <h6 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    High Match Keywords
+                                  </h6>
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.detailedAnalysis.highMatchKeywords.map((keyword, idx) => (
+                                      <Badge key={idx} className="bg-green-100 text-green-800 text-xs">
+                                        {keyword}
+                                      </Badge>
+                                    ))}
                                   </div>
-                                  <span className="text-xs text-gray-500">({tech.level})</span>
+                                </div>
+                                
+                                <div>
+                                  <h6 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                    Partial Match Keywords
+                                  </h6>
+                                  <div className="flex flex-wrap gap-1">
+                                    {item.detailedAnalysis.partialMatchKeywords.map((keyword, idx) => (
+                                      <Badge key={idx} className="bg-yellow-100 text-yellow-800 text-xs">
+                                        {keyword}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="mt-4 p-3 bg-warmBrown-50 rounded-lg">
+                                <h6 className="font-medium text-warmBrown-800 mb-1">Context Relevance</h6>
+                                <p className="text-sm text-warmBrown-700">{item.detailedAnalysis.contextRelevance}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Project Relevancy Details */}
+                        {item.title === "Project Relevancy" && (
+                          <div className="space-y-4">
+                            <div>
+                              <h6 className="font-medium text-gray-900 mb-3">Most Relevant Projects</h6>
+                              <div className="space-y-4">
+                                {item.detailedAnalysis.mostRelevantProjects.map((project, projIndex) => (
+                                  <div key={projIndex} className="border-l-4 border-warmBrown-200 pl-4 py-2">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <h6 className="font-semibold text-gray-900">{project.name}</h6>
+                                      <Badge className={`${project.match >= 90 ? 'bg-green-100 text-green-800' : project.match >= 80 ? 'bg-yellow-100 text-yellow-800' : 'bg-orange-100 text-orange-800'}`}>
+                                        {project.match}% Match
+                                      </Badge>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mb-2">{project.description}</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {project.technologies.map((tech, techIdx) => (
+                                        <Badge key={techIdx} className="bg-brownBeige-100 text-warmBrown-800 text-xs">
+                                          {tech}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-brownBeige-50 p-4 rounded-lg">
+                              <h6 className="font-medium text-warmBrown-800 mb-2">Project Impact Analysis</h6>
+                              <p className="text-sm text-warmBrown-700">{item.detailedAnalysis.impactAnalysis}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Educational Background Details */}
+                        {item.title === "Educational Background" && (
+                          <div className="space-y-4">
+                            <div className="space-y-4">
+                              {item.detailedAnalysis.degrees.map((degree, degIndex) => (
+                                <div key={degIndex} className="border-l-4 border-warmBrown-200 pl-4 py-3">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h6 className="font-semibold text-gray-900">{degree.degree}</h6>
+                                    <Badge className={`${degree.match === 'Excellent Match' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                      {degree.match}
+                                    </Badge>
+                                  </div>
+                                  <div className="text-sm text-warmBrown-700 font-medium mb-1">{degree.institution}</div>
+                                  <div className="text-sm text-gray-600 mb-2">{degree.period} • GPA: {degree.gpa}</div>
+                                  
+                                  {degree.coursework && (
+                                    <div className="mb-2">
+                                      <div className="text-sm font-medium text-gray-700 mb-1">Relevant Coursework</div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {degree.coursework.map((course, courseIdx) => (
+                                          <Badge key={courseIdx} className="bg-brownBeige-100 text-warmBrown-800 text-xs">
+                                            {course}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {degree.achievements && (
+                                    <div>
+                                      <div className="text-sm font-medium text-gray-700 mb-1">Key Achievements</div>
+                                      <ul className="text-xs text-gray-600 space-y-1">
+                                        {degree.achievements.map((achievement, achIdx) => (
+                                          <li key={achIdx} className="flex items-center gap-2">
+                                            <div className="w-1 h-1 rounded-full bg-warmBrown-500"></div>
+                                            {achievement}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                             </div>
-                          </div>
-
-                          <div className="bg-brownBeige-25 p-4 rounded-lg">
-                            <h6 className="font-medium text-gray-900 mb-3">Backend & Infrastructure</h6>
-                            <div className="space-y-2">
-                              {item.detailedAnalysis.backendInfrastructure.map((tech, techIndex) => (
-                                <div key={techIndex} className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <div className={`w-2 h-2 rounded-full ${getLevelIndicatorColor(tech.color)}`}></div>
-                                    <span className="text-sm text-gray-700">{tech.name}</span>
+                            
+                            <div className="bg-brownBeige-50 p-4 rounded-lg">
+                              <h6 className="font-medium text-warmBrown-800 mb-3">Professional Certifications</h6>
+                              <div className="grid md:grid-cols-2 gap-3">
+                                {item.detailedAnalysis.certifications.map((cert, certIdx) => (
+                                  <div key={certIdx} className="flex items-center gap-3 p-2 bg-white rounded border">
+                                    <div className="w-6 h-6 rounded-full bg-warmBrown-600 flex items-center justify-center">
+                                      <span className="text-white text-xs">✓</span>
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-semibold text-gray-900">{cert.name}</div>
+                                      <div className="text-xs text-gray-600">{cert.level} • {cert.year}</div>
+                                    </div>
                                   </div>
-                                  <span className="text-xs text-gray-500">({tech.level})</span>
-                                </div>
-                              ))}
+                                ))}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
+
+                        {/* Interpersonal Skills Details */}
+                        {item.title === "Interpersonal Skills" && (
+                          <div className="space-y-4">
+                            <div>
+                              <h6 className="font-medium text-gray-900 mb-3">Identified Soft Skills</h6>
+                              <div className="grid md:grid-cols-2 gap-4">
+                                <div>
+                                  <h6 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                                    Strong Evidence
+                                  </h6>
+                                  <div className="space-y-2">
+                                    {item.detailedAnalysis.identifiedSkills.strongEvidence.map((skill, skillIdx) => (
+                                      <div key={skillIdx} className="flex items-center justify-between p-2 bg-green-50 rounded">
+                                        <div>
+                                          <div className="text-sm font-medium text-gray-900">{skill.skill}</div>
+                                          <div className="text-xs text-gray-600">{skill.description}</div>
+                                        </div>
+                                        <div className="text-sm font-bold text-green-700">{skill.score}%</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <h6 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                    Moderate Evidence
+                                  </h6>
+                                  <div className="space-y-2">
+                                    {item.detailedAnalysis.identifiedSkills.moderateEvidence.map((skill, skillIdx) => (
+                                      <div key={skillIdx} className="flex items-center justify-between p-2 bg-yellow-50 rounded">
+                                        <div>
+                                          <div className="text-sm font-medium text-gray-900">{skill.skill}</div>
+                                          <div className="text-xs text-gray-600">{skill.description}</div>
+                                        </div>
+                                        <div className="text-sm font-bold text-yellow-700">{skill.score}%</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="bg-brownBeige-50 p-4 rounded-lg">
+                              <h6 className="font-medium text-warmBrown-800 mb-3">Evidence Sources</h6>
+                              <div className="space-y-2">
+                                {item.detailedAnalysis.evidenceSources.map((source, sourceIdx) => (
+                                  <div key={sourceIdx} className="p-2 bg-cream-50 rounded border-l-3 border-warmBrown-400">
+                                    <div className="text-sm font-medium text-warmBrown-800">{source.skill}</div>
+                                    <div className="text-xs text-warmBrown-600">{source.evidence}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h6 className="font-medium text-gray-900 mb-3">Soft Skills Portfolio</h6>
+                              <div className="flex flex-wrap gap-2">
+                                {item.detailedAnalysis.softSkillsPortfolio.map((skill, skillIdx) => (
+                                  <Badge key={skillIdx} className="bg-brownBeige-200 text-warmBrown-800">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     
