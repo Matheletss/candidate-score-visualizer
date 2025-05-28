@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Brain, GraduationCap, Users, Download, FileText, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -358,7 +357,7 @@ const Index = () => {
                         {/* Semantic Scoring Details */}
                         {item.title === "Semantic Scoring" && (
                           <div className="space-y-4">
-                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                            <div className="space-y-4">
                               <div className="flex items-center justify-between mb-2">
                                 <h6 className="font-medium text-gray-900">Keyword Alignment Analysis</h6>
                                 <Badge className="bg-blue-100 text-blue-800">Division</Badge>
