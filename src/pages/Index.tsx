@@ -6,14 +6,13 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
-  const [overallScore] = useState(87);
+  const [overallScore] = useState(81);
   const [candidateData] = useState({
-    name: "Sarah Chen",
-    email: "sarah.chen@email.com",
-    phone: "(555) 123-4567",
-    location: "San Francisco, CA",
-    experience: "5+ years",
-    jobTitle: "Senior Frontend Developer"
+    name: "Mayukh Abhigyan Das",
+    email: "22b0033@iitb.ac.in",
+    phone: null,
+    location: "Mumbai, India",
+    jobTitle: "Full Stack Web Developer"
   });
 
   const [scoringData] = useState([
@@ -22,139 +21,134 @@ const Index = () => {
       score: 92,
       description: "Technical skills align well with requirements",
       icon: Target,
-      skills: ["React", "TypeScript", "Node.js", "GraphQL", "AWS"],
+      skills: ["React.js", "Node.js", "JavaScript", "MongoDB", "HTML/CSS"],
       detailedAnalysis: {
         title: "Technical Skills Analysis",
         subtitle: "Technical skills align well with requirements",
-        matchedSkills: ["React.js", "Node.js", "TypeScript", "AWS", "Docker", "PostgreSQL", "GraphQL", "Kubernetes"],
+        matchedSkills: ["React.js", "Node.js", "JavaScript", "HTML", "CSS", "MongoDB", "Express.js", "Git", "Bootstrap"],
         frontendTechnologies: [
-          { name: "React.js", level: "Expert", color: "green" },
-          { name: "TypeScript", level: "Advanced", color: "green" },
-          { name: "Vue.js", level: "Intermediate", color: "yellow" }
+          { name: "React.js", level: "Advanced", color: "green" },
+          { name: "JavaScript", level: "Advanced", color: "green" },
+          { name: "HTML/CSS", level: "Expert", color: "green" },
+          { name: "Bootstrap", level: "Advanced", color: "green" }
         ],
         backendInfrastructure: [
-          { name: "Node.js", level: "Expert", color: "green" },
-          { name: "AWS", level: "Advanced", color: "green" },
-          { name: "Docker", level: "Advanced", color: "green" }
+          { name: "Node.js", level: "Advanced", color: "green" },
+          { name: "Express.js", level: "Advanced", color: "green" },
+          { name: "MongoDB", level: "Advanced", color: "green" },
+          { name: "MySQL", level: "Intermediate", color: "yellow" }
         ]
       }
     },
     {
       title: "Semantic Scoring",
-      score: 85,
+      score: 80,
       description: "Resume content matches job description context",
       icon: Brain,
-      skills: ["Frontend Architecture", "API Integration", "Performance Optimization"],
+      skills: ["Full Stack Development", "Web Applications", "Database Management"],
       detailedAnalysis: {
         title: "Content Analysis",
         subtitle: "Resume content matches job description context",
-        keywordAlignment: "Strong correlation between resume terminology and job requirements. Technical vocabulary demonstrates deep understanding of role expectations.",
-        highMatchKeywords: ["full-stack development", "scalable architecture", "microservices", "agile methodology", "cloud deployment"],
-        partialMatchKeywords: ["team leadership", "performance optimization", "code review", "CI/CD pipeline"],
-        contextRelevance: "Resume demonstrates contextual understanding of senior-level responsibilities with appropriate technical depth and business impact focus."
+        keywordAlignment: "Strong correlation between resume projects and job requirements. Technical vocabulary demonstrates practical understanding of full-stack development with relevant project experience.",
+        highMatchKeywords: ["full-stack", "web applications", "React.js", "Node.js", "MongoDB", "REST APIs", "authentication"],
+        partialMatchKeywords: ["database management", "responsive design", "JWT", "backend development", "frontend frameworks"],
+        contextRelevance: "Resume demonstrates hands-on experience with MERN stack development and shows progression from individual projects to full-stack applications with appropriate technical depth for entry-level position."
       }
     },
     {
       title: "Project Relevancy",
-      score: 78,
-      description: "Projects demonstrate applicable experience",
+      score: 90,
+      description: "Projects demonstrate applicable full-stack experience",
       icon: FileText,
-      skills: ["E-commerce Platform", "Real-time Dashboard", "Mobile-first SPA"],
+      skills: ["MERN Stack", "Authentication Systems", "Database Design"],
       detailedAnalysis: {
         title: "Experience Analysis",
-        subtitle: "Projects demonstrate applicable experience",
+        subtitle: "Projects demonstrate applicable full-stack experience",
         mostRelevantProjects: [
           {
-            name: "E-commerce Platform Redesign",
+            name: "iNotebook",
             match: 95,
-            description: "Led full-stack development of scalable microservices architecture serving 2M+ users",
-            technologies: ["React", "Node.js", "AWS"]
+            description: "Built a secure, full-stack note-taking app using MERN stack and Bootstrap for responsiveness",
+            technologies: ["React.js", "Node.js", "MongoDB", "JWT", "Bootstrap"]
           },
           {
-            name: "Real-time Analytics Dashboard",
+            name: "Node-Rest-Shop",
+            match: 88,
+            description: "Developed a backend shopping application using Node.js, Express.js, MongoDB, and REST APIs",
+            technologies: ["Node.js", "Express.js", "MongoDB", "REST APIs"]
+          },
+          {
+            name: "TextUtils-React",
             match: 82,
-            description: "Built high-performance data visualization platform with real-time streaming capabilities",
-            technologies: ["TypeScript", "GraphQL", "Docker"]
-          },
-          {
-            name: "Mobile Banking Application",
-            match: 75,
-            description: "Developed secure financial services app with biometric authentication and fraud detection",
-            technologies: ["React Native", "Security", "API Design"]
+            description: "Built a React.js web app for text manipulation with responsive design and dark mode",
+            technologies: ["React.js", "Bootstrap", "Responsive Design"]
           }
         ],
-        impactAnalysis: "Strong portfolio demonstrating progressive responsibility and technical leadership. Projects show direct relevance to senior engineering role requirements."
+        impactAnalysis: "Strong portfolio demonstrating practical full-stack development skills. Projects show direct relevance to web development role with modern technologies and best practices implementation."
       }
     },
     {
       title: "Educational Background",
-      score: 90,
-      description: "Education meets position requirements",
+      score: 85,
+      description: "Engineering education provides strong technical foundation",
       icon: GraduationCap,
-      skills: ["B.S. Computer Science", "Stanford University", "Machine Learning Coursework"],
+      skills: ["B.Tech Aerospace Engineering", "IIT Bombay", "Technical Problem Solving"],
       detailedAnalysis: {
         title: "Academic Qualifications",
-        subtitle: "Education meets position requirements",
+        subtitle: "Engineering education provides strong technical foundation",
         degrees: [
           {
-            degree: "Master of Science in Computer Science",
-            institution: "Stanford University",
-            period: "2018 - 2020",
-            gpa: "3.8/4.0",
-            match: "Excellent Match",
-            coursework: ["Advanced Algorithms", "Distributed Systems", "Machine Learning", "Software Architecture"]
-          },
-          {
-            degree: "Bachelor of Science in Software Engineering",
-            institution: "University of California, Berkeley",
-            period: "2014 - 2018",
-            gpa: "3.7/4.0",
+            degree: "Bachelor of Technology in Aerospace Engineering",
+            institution: "Indian Institute of Technology Bombay",
+            period: "2022 - 2026",
+            gpa: "N/A",
             match: "Strong Match",
-            achievements: ["Dean's List for 6 consecutive semesters", "Senior Capstone Project: Real-time Collaboration Platform", "President, Computer Science Student Association"]
+            coursework: ["Programming Fundamentals", "Data Structures", "Mathematical Analysis", "Engineering Problem Solving"],
+            achievements: ["IIT Bombay Graduate", "Strong Technical Foundation", "Multiple Technical Projects", "Data Science and ML Experience"]
           }
         ],
         certifications: [
-          { name: "AWS Solutions Architect", level: "Professional Level", year: "2022" },
-          { name: "Google Cloud Professional", level: "Cloud Architect", year: "2023" }
+          { name: "Data Science Training", level: "Completed", year: "2023" },
+          { name: "Full Stack Development", level: "Self-taught", year: "2024" }
         ]
       }
     },
     {
       title: "Interpersonal Skills",
-      score: 72,
-      description: "Communication and teamwork indicators present",
+      score: 60,
+      description: "Limited evidence of team collaboration and leadership",
       icon: Users,
-      skills: ["Team Leadership", "Cross-functional Collaboration", "Mentoring"],
+      skills: ["Independent Work", "Technical Communication", "Learning Agility"],
       detailedAnalysis: {
         title: "Soft Skills Assessment",
-        subtitle: "Communication and teamwork indicators present",
+        subtitle: "Limited evidence of team collaboration and leadership",
         identifiedSkills: {
           strongEvidence: [
-            { skill: "Leadership", score: 85, description: "Led cross-functional teams of 8+ developers across multiple projects" },
-            { skill: "Problem Solving", score: 82, description: "Resolved complex technical challenges and optimized system performance" },
-            { skill: "Communication", score: 78, description: "Presented technical solutions to stakeholders and conducted code reviews" }
+            { skill: "Learning Agility", score: 75, description: "Demonstrated ability to learn new technologies quickly (MERN stack, ML)" },
+            { skill: "Problem Solving", score: 70, description: "Applied technical solutions across diverse projects from AI to web development" },
+            { skill: "Self-Motivation", score: 68, description: "Completed multiple independent projects across different domains" }
           ],
           moderateEvidence: [
-            { skill: "Teamwork", score: 68, description: "Collaborated effectively in agile development environments" },
-            { skill: "Adaptability", score: 65, description: "Successfully adapted to new technologies and methodologies" },
-            { skill: "Time Management", score: 62, description: "Managed multiple project deadlines and deliverables" }
+            { skill: "Technical Communication", score: 55, description: "Basic technical documentation in projects" },
+            { skill: "Time Management", score: 52, description: "Managed multiple projects with overlapping timelines" },
+            { skill: "Adaptability", score: 50, description: "Transitioned between different technology stacks and domains" }
           ]
         },
         evidenceSources: [
           {
-            skill: "Leadership Experience",
-            evidence: "Led cross-functional teams of 8+ developers across multiple projects"
+            skill: "Independent Learning",
+            evidence: "Self-taught full-stack development and completed diverse technical projects"
           },
           {
-            skill: "Communication Skills",
-            evidence: "Presented technical solutions to stakeholders and conducted code reviews"
+            skill: "Technical Versatility",
+            evidence: "Worked across multiple domains: AI/ML, web development, and aerospace engineering"
           },
           {
-            skill: "Problem Solving",
-            evidence: "Resolved complex technical challenges and optimized system performance"
+            skill: "Project Execution",
+            evidence: "Successfully completed multiple technical projects with practical implementations"
           }
         ],
-        softSkillsPortfolio: ["Team Leadership", "Technical Communication", "Mentoring", "Cross-functional Collaboration", "Stakeholder Management", "Conflict Resolution", "Project Coordination"]
+        softSkillsPortfolio: ["Independent Learning", "Technical Problem Solving", "Self-Motivation", "Adaptability", "Technical Communication", "Time Management"]
       }
     }
   ]);
@@ -207,9 +201,8 @@ const Index = () => {
                 <h2 className="text-3xl font-bold text-gray-900">{candidateData.name}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600">
                   <p>{candidateData.email}</p>
-                  <p>{candidateData.phone}</p>
+                  {candidateData.phone && <p>{candidateData.phone}</p>}
                   <p>{candidateData.location}</p>
-                  <p>{candidateData.experience} experience</p>
                 </div>
               </div>
               
@@ -360,7 +353,7 @@ const Index = () => {
                             <div className="space-y-4">
                               <div className="flex items-center justify-between mb-2">
                                 <h6 className="font-medium text-gray-900">Keyword Alignment Analysis</h6>
-                                <Badge className="bg-blue-100 text-blue-800">Division</Badge>
+                                <Badge className="bg-blue-100 text-blue-800">Analysis</Badge>
                               </div>
                               <p className="text-sm text-gray-700 mb-4">{item.detailedAnalysis.keywordAlignment}</p>
                               
@@ -449,7 +442,7 @@ const Index = () => {
                                     </Badge>
                                   </div>
                                   <div className="text-sm text-warmBrown-700 font-medium mb-1">{degree.institution}</div>
-                                  <div className="text-sm text-gray-600 mb-2">{degree.period} • GPA: {degree.gpa}</div>
+                                  <div className="text-sm text-gray-600 mb-2">{degree.period}</div>
                                   
                                   {degree.coursework && (
                                     <div className="mb-2">
