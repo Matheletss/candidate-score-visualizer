@@ -1,447 +1,297 @@
 
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { Download, BadgeCheck, User, Mail, Building, Calendar, TrendingUp, Star, Award, Users, BookOpen, Target, Briefcase } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import CandidateSelector from "@/components/CandidateSelector";
+import { CandidateEvaluation } from "@/types/evaluation";
+import { evaluationService } from "@/services/evaluationService";
+import { getIcon } from "@/utils/iconMapper";
 
-interface Applicant {
-  application_id: string;
-  user_email: string;
-  user_id: string;
-  score_id: string;
-  job_title: string;
-  job_company: string;
-  status: string;
-  user_name: string;
-}
+const Index = () => {
+  const [candidates, setCandidates] = useState<CandidateEvaluation[]>([]);
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateEvaluation | null>(null);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+  const [isLoadingCandidates, setIsLoadingCandidates] = useState(true);
+  const [isLoadingEvaluation, setIsLoadingEvaluation] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-interface EvaluationItem {
-  title: string;
-  score: number;
-  description: string;
-  icon: string;
-  skills: string[];
-  detailedAnalysis: Record<string, any>;
-}
-
-interface ScoreData {
-  overallScore: number;
-  evaluation: EvaluationItem[];
-}
-
-interface ResumeEvaluation {
-  _id: string;
-  user_id: string;
-  name: string;
-  last_scored_at: string;
-  score_data: ScoreData;
-}
-
-const Index: React.FC = () => {
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-  const { id } = useParams();
-  const { toast } = useToast();
-
-  const [applicants, setApplicants] = useState<Applicant[]>([]);
-  const [jobTitle, setJobTitle] = useState("");
-  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
-  const [evaluation, setEvaluation] = useState<ResumeEvaluation | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [loadingEvaluation, setLoadingEvaluation] = useState(false);
-
-  const weightMap: Record<string, number> = {
-    "Skill Match": 30,
-    "Work Experience": 20,
-    "Semantic Scoring": 15,
-    "Project Relevancy": 15,
-    "Educational Background": 10,
-    "Interpersonal Skills": 10,
-  };
-
-  const getIconForCategory = (title: string) => {
-    const iconMap: Record<string, any> = {
-      "Skill Match": Target,
-      "Work Experience": Briefcase,
-      "Semantic Scoring": TrendingUp,
-      "Project Relevancy": Star,
-      "Educational Background": BookOpen,
-      "Interpersonal Skills": Users,
-    };
-    return iconMap[title] || BadgeCheck;
-  };
-
-  const getScoreColor = (percentage: number) => {
-    if (percentage >= 80) return "text-emerald-600";
-    if (percentage >= 60) return "text-yellow-600";
-    return "text-red-500";
-  };
-
-  const getScoreBg = (percentage: number) => {
-    if (percentage >= 80) return "bg-emerald-50 border-emerald-200";
-    if (percentage >= 60) return "bg-yellow-50 border-yellow-200";
-    return "bg-red-50 border-red-200";
-  };
-
-  const fetchApplicants = async () => {
-    try {
-      const res = await fetch(`${API_URL}/applicants/${id || '1'}`);
-      const data = await res.json();
-      console.log("Fetched applicants:", data);
-      setApplicants(data.applicants || []);
-      setJobTitle(data.job_title || "");
-    } catch (error) {
-      console.error("Error fetching applicants:", error);
-      toast({ title: "Error", description: "Failed to load applicants.", variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchEvaluation = async (applicant: Applicant) => {
-    setSelectedApplicant(applicant);
-    setLoadingEvaluation(true);
-    console.log("Fetching evaluation for applicant:", applicant);
-    try {
-      const res = await fetch(`${API_URL}/score/user/${applicant.user_id}`);
-      const data = await res.json();
-      console.log("Fetched evaluation data:", data);
-      if (data && data.user_id) {
-        setEvaluation(data);
-      } else {
-        setEvaluation(null);
-      }
-    } catch (error) {
-      console.error("Error fetching evaluation:", error);
-      setEvaluation(null);
-    } finally {
-      setLoadingEvaluation(false);
-    }
-  };
-
-  const handleScoreEvaluation = async () => {
-    if (!selectedApplicant) return;
-    setLoadingEvaluation(true);
-    console.log("Generating score for applicant:", selectedApplicant.user_email);
-    try {
-      const res = await fetch(`${API_URL}/score/${selectedApplicant.user_email}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      
-      if (!res.ok) {
-        throw new Error("Failed to generate score.");
-      }
-
-      const data = await res.json();
-      console.log("Generated evaluation data:", data);
-      toast({ title: "Success", description: "Evaluation generated successfully." });
-
-      await fetchEvaluation(selectedApplicant);
-    } catch (error: any) {
-      console.error("Error generating evaluation:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to evaluate.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingEvaluation(false);
-    }
-  };
-
+  // Fetch candidates on component mount
   useEffect(() => {
-    fetchApplicants();
-  }, [id]);
+    const fetchCandidates = async () => {
+      try {
+        setIsLoadingCandidates(true);
+        const candidatesData = await evaluationService.getCandidates();
+        setCandidates(candidatesData);
+        setError(null);
+      } catch (err) {
+        setError('Failed to load candidates. Please try again.');
+        console.error('Error fetching candidates:', err);
+      } finally {
+        setIsLoadingCandidates(false);
+      }
+    };
 
-  if (loading) {
+    fetchCandidates();
+  }, []);
+
+  // Fetch specific candidate evaluation
+  const handleCandidateSelect = async (candidateId: string) => {
+    try {
+      setIsLoadingEvaluation(true);
+      setSelectedCandidateId(candidateId);
+      const candidateData = await evaluationService.getCandidateEvaluation(candidateId);
+      setSelectedCandidate(candidateData);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load candidate evaluation. Please try again.');
+      console.error('Error fetching candidate evaluation:', err);
+    } finally {
+      setIsLoadingEvaluation(false);
+    }
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return "from-warmBrown-700 to-warmBrown-800";
+    if (score >= 70) return "from-warmBrown-600 to-warmBrown-700";
+    if (score >= 50) return "from-brownBeige-500 to-brownBeige-600";
+    return "from-gray-400 to-gray-500";
+  };
+
+  const getStatusText = (score: number) => {
+    if (score >= 85) return "Excellent Candidate";
+    if (score >= 70) return "Strong Match";
+    if (score >= 50) return "Good Potential";
+    return "Needs Review";
+  };
+
+  if (isLoadingCandidates) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-lg text-slate-600">Loading applicants...</p>
+      <div className="min-h-screen bg-gradient-to-br from-brownBeige-50 to-cream-100 flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading candidates...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-              <Building className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">Candidate Evaluation</h1>
-              <p className="text-slate-600">
-                {jobTitle ? (
-                  <>Reviewing candidates for <span className="font-semibold text-blue-600">{jobTitle}</span></>
-                ) : (
-                  "Review and evaluate candidate profiles"
-                )}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-brownBeige-50 to-cream-100 p-6">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Resume Evaluation
+          </h1>
+          <p className="text-xl text-gray-600">
+            AI-powered analysis of candidate fit for positions
+          </p>
         </div>
-      </div>
 
-      <div className="flex-1 max-w-7xl mx-auto p-6 flex gap-6 min-h-0">
-        {/* Left Panel - Applicants List */}
-        <div className="w-1/3 flex flex-col min-h-0">
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm shadow-xl border-0 flex flex-col">
-            <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 flex-shrink-0">
-              <CardTitle className="flex items-center gap-2 text-slate-800">
-                <Users className="w-5 h-5" />
-                Candidates ({applicants.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 flex-1 min-h-0">
-              <div className="h-full overflow-y-auto">
-                {applicants.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <p className="text-slate-500">No candidates yet.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-slate-100">
-                    {applicants.map((applicant) => (
-                      <div
-                        key={applicant.application_id}
-                        className={`p-4 cursor-pointer transition-all duration-200 hover:bg-slate-50 ${
-                          selectedApplicant?.user_id === applicant.user_id 
-                            ? "bg-blue-50 border-r-4 border-blue-500" 
-                            : ""
-                        }`}
-                        onClick={() => fetchEvaluation(applicant)}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {applicant.user_name.split(' ').map(n => n[0]).join('')}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-slate-900 truncate">
-                              {applicant.user_name}
-                            </div>
-                            <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
-                              <Mail className="w-3 h-3" />
-                              <span className="truncate">{applicant.user_email}</span>
-                            </div>
-                            <div className="mt-2">
-                              <Badge 
-                                variant={applicant.status === 'active' ? 'default' : 'secondary'}
-                                className="text-xs"
-                              >
-                                {applicant.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+        {/* Candidate Selector */}
+        <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Select Candidate</h3>
+                <CandidateSelector
+                  candidates={candidates}
+                  selectedCandidateId={selectedCandidateId}
+                  onCandidateSelect={handleCandidateSelect}
+                  isLoading={isLoadingEvaluation}
+                />
+              </div>
+              {selectedCandidate && (
+                <Button 
+                  variant="outline" 
+                  className="border-warmBrown-600 text-warmBrown-700 hover:bg-brownBeige-50 transition-colors"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Resume
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Error Display */}
+        {error && (
+          <Alert className="border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Loading State */}
+        {isLoadingEvaluation && (
+          <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span>Loading evaluation...</span>
               </div>
             </CardContent>
           </Card>
-        </div>
+        )}
 
-        {/* Right Panel - Evaluation Details */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm shadow-xl border-0 flex flex-col min-h-0">
-            <CardContent className="p-0 flex-1 min-h-0 overflow-hidden">
-              <div className="h-full overflow-y-auto">
-                {!selectedApplicant ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                    <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
-                      <User className="w-12 h-12 text-slate-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-slate-700 mb-2">Select a Candidate</h3>
-                    <p className="text-slate-500">Choose a candidate from the list to view their evaluation details.</p>
+        {/* Candidate Information and Evaluation */}
+        {selectedCandidate && !isLoadingEvaluation && (
+          <>
+            {/* Candidate Information Card */}
+            <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-brownBeige-200 to-brownBeige-300 flex items-center justify-center text-2xl font-bold text-warmBrown-800">
+                    {selectedCandidate.name.split(' ').map(n => n[0]).join('')}
                   </div>
-                ) : loadingEvaluation ? (
-                  <div className="flex flex-col items-center justify-center h-full p-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                    <p className="text-slate-600">Loading evaluation...</p>
-                  </div>
-                ) : evaluation ? (
-                  <div className="p-6 space-y-6">
-                    {/* Profile Header */}
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-                      <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-                        <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                          {evaluation.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div className="flex-1 space-y-3">
-                          <h2 className="text-3xl font-bold text-slate-900">{evaluation.name}</h2>
-                          <div className="flex flex-wrap gap-4 text-slate-600">
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4" />
-                              <span>{selectedApplicant.user_email}</span>
-                            </div>
-                            {evaluation.last_scored_at && (
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>Last scored: {new Date(evaluation.last_scored_at).toLocaleDateString()}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          className="bg-white hover:bg-slate-50 border-slate-300 shadow-sm"
-                        >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download Resume
-                        </Button>
-                      </div>
+                  
+                  <div className="flex-1 space-y-2">
+                    <h2 className="text-3xl font-bold text-gray-900">{selectedCandidate.name}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600">
+                      <p>{selectedCandidate.user_email}</p>
+                      <p>Last Evaluated: {new Date(selectedCandidate.last_scored_at.$date).toLocaleDateString()}</p>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                    {/* Overall Score Card */}
-                    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100">
-                      <div className="flex items-center gap-6">
-                        <div className="relative">
-                          <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-2xl font-bold text-white">
-                              {evaluation.score_data.overallScore}%
-                            </span>
-                          </div>
-                          <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
-                            <Award className="w-4 h-4 text-yellow-800" />
-                          </div>
+            {/* Overall Score Section */}
+            <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+              <CardContent className="p-8 text-center">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative w-32 h-32">
+                    <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="transparent"
+                        className="text-brownBeige-100"
+                      />
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="40"
+                        stroke="currentColor"
+                        strokeWidth="8"
+                        fill="transparent"
+                        strokeDasharray={`${2 * Math.PI * 40}`}
+                        strokeDashoffset={`${2 * Math.PI * 40 * (1 - selectedCandidate.score_data.overallScore / 100)}`}
+                        className="text-warmBrown-700 transition-all duration-1000 ease-out"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-3xl font-bold text-warmBrown-700">{selectedCandidate.score_data.overallScore}%</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-gray-900">Overall Match Score</h3>
+                    <p className="text-lg font-medium text-warmBrown-700">{getStatusText(selectedCandidate.score_data.overallScore)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Detailed Scoring Breakdown */}
+            <div className="grid gap-6">
+              {selectedCandidate.score_data.evaluation.map((item, index) => {
+                const IconComponent = getIcon(item.icon);
+                return (
+                  <Card key={index} className="shadow-lg border-0 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow duration-300">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 rounded-lg bg-brownBeige-100">
+                          <IconComponent className="w-6 h-6 text-warmBrown-700" />
                         </div>
-                        <div className="flex-1">
-                          <h3 className="text-2xl font-bold text-slate-900 mb-2">Overall Match Score</h3>
-                          <p className="text-slate-600">
-                            This candidate shows a {evaluation.score_data.overallScore >= 80 ? 'strong' : evaluation.score_data.overallScore >= 60 ? 'good' : 'moderate'} match for the position requirements.
-                          </p>
-                          <div className="mt-3">
-                            <Progress 
-                              value={evaluation.score_data.overallScore} 
-                              className="h-3 bg-white/50"
+                        
+                        <div className="flex-1 space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h4 className="text-xl font-semibold text-gray-900">{item.title}</h4>
+                            <span className="text-2xl font-bold text-warmBrown-700">{item.score}%</span>
+                          </div>
+                          
+                          <div className="w-full bg-brownBeige-50 rounded-full h-3 overflow-hidden">
+                            <div 
+                              className={`h-full bg-gradient-to-r ${getScoreColor(item.score)} transition-all duration-1000 ease-out rounded-full`}
+                              style={{ width: `${item.score}%` }}
                             />
                           </div>
+                          
+                          <p className="text-gray-600">{item.description}</p>
+                          
+                          <div className="flex flex-wrap gap-2">
+                            {item.skills.map((skill, skillIndex) => (
+                              <Badge 
+                                key={skillIndex} 
+                                variant="secondary" 
+                                className="bg-brownBeige-100 text-warmBrown-800 hover:bg-brownBeige-200 transition-colors"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+
+                          {/* Detailed Analysis */}
+                          {item.detailedAnalysis && (
+                            <div className="border-l-4 border-warmBrown-300 pl-4 space-y-2">
+                              <h6 className="font-medium text-gray-900">Detailed Analysis</h6>
+                              <pre className="text-sm text-gray-600 whitespace-pre-wrap bg-brownBeige-25 p-3 rounded">
+                                {JSON.stringify(item.detailedAnalysis, null, 2)}
+                              </pre>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
 
-                    {/* Evaluation Breakdown */}
-                    <div className="grid gap-4">
-                      <h3 className="text-xl font-bold text-slate-900 mb-2">Detailed Evaluation</h3>
-                      {evaluation.score_data.evaluation.map((item) => {
-                        const maxScore = weightMap[item.title] || 100;
-                        const percentage = Math.round((item.score / maxScore) * 100);
-                        const IconComponent = getIconForCategory(item.title);
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-warmBrown-700 to-warmBrown-800 hover:from-warmBrown-800 hover:to-warmBrown-900 text-white px-8 py-3 text-lg transition-all duration-200 hover:scale-105"
+              >
+                Compare Candidates
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-warmBrown-600 text-warmBrown-700 hover:bg-brownBeige-50 px-8 py-3 text-lg transition-all duration-200 hover:scale-105"
+              >
+                Add Notes
+              </Button>
+            </div>
+          </>
+        )}
 
-                        return (
-                          <Card
-                            key={item.title}
-                            className={`border-l-4 transition-all duration-200 hover:shadow-lg ${getScoreBg(percentage)}`}
-                          >
-                            <CardHeader className="pb-3">
-                              <CardTitle className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className={`w-10 h-10 rounded-lg bg-white/70 flex items-center justify-center ${getScoreColor(percentage)}`}>
-                                    <IconComponent className="w-5 h-5" />
-                                  </div>
-                                  <span className="text-slate-900">{item.title}</span>
-                                </div>
-                                <div className={`text-2xl font-bold ${getScoreColor(percentage)}`}>
-                                  {percentage}%
-                                </div>
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                              <p className="text-slate-600">{item.description}</p>
-
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between text-sm text-slate-500">
-                                  <span>Score Progress</span>
-                                  <span>{item.score}/{maxScore}</span>
-                                </div>
-                                <Progress
-                                  value={percentage}
-                                  className="h-2 bg-white/50"
-                                />
-                              </div>
-
-                              {item.skills.length > 0 && (
-                                <div>
-                                  <div className="font-semibold mb-2 text-slate-700">Matched Skills:</div>
-                                  <div className="flex flex-wrap gap-2">
-                                    {item.skills.map((skill) => (
-                                      <Badge
-                                        variant="secondary"
-                                        key={skill}
-                                        className="bg-white/70 text-slate-700 border border-slate-200 hover:bg-white transition-colors"
-                                      >
-                                        {skill}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              <details className="group">
-                                <summary className="cursor-pointer text-slate-700 hover:text-slate-900 font-medium list-none flex items-center gap-2">
-                                  <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-xs group-open:rotate-90 transition-transform">
-                                    ▶
-                                  </div>
-                                  Detailed Analysis
-                                </summary>
-                                <div className="mt-3 bg-white/50 rounded-lg p-4 border border-slate-200">
-                                  <pre className="text-xs text-slate-600 overflow-x-auto whitespace-pre-wrap">
-                                    {JSON.stringify(item.detailedAnalysis, null, 2)}
-                                  </pre>
-                                </div>
-                              </details>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full gap-6 p-8">
-                    <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center">
-                      <TrendingUp className="w-12 h-12 text-slate-400" />
-                    </div>
-                    <div className="text-center space-y-2">
-                      <h3 className="text-xl font-semibold text-slate-700">No Evaluation Available</h3>
-                      <p className="text-slate-500">Generate an evaluation to see detailed analysis for this candidate.</p>
-                    </div>
-                    <Button
-                      onClick={handleScoreEvaluation}
-                      className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3"
-                      disabled={loadingEvaluation}
-                    >
-                      {loadingEvaluation ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Star className="w-4 h-4 mr-2" />
-                          Score & Evaluate
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </div>
+        {/* Empty State */}
+        {!selectedCandidate && !isLoadingEvaluation && candidates.length > 0 && (
+          <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-600">Please select a candidate to view their evaluation.</p>
             </CardContent>
           </Card>
-        </div>
+        )}
+
+        {/* No Candidates State */}
+        {candidates.length === 0 && !isLoadingCandidates && (
+          <Card className="w-full shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-600">No candidates found. Please check your backend connection.</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
