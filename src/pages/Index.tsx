@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,14 +8,51 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Download, BadgeCheck, User, Mail, Building, Calendar, TrendingUp, Star, Award, Users, BookOpen, Target, Briefcase } from "lucide-react";
-import { evaluationService } from "@/services/evaluationService";
-import { CandidateEvaluation } from "@/types/evaluation";
-import CandidateSelector from "@/components/CandidateSelector";
-import { getIcon } from "@/utils/iconMapper";
+
+interface Applicant {
+  application_id: string;
+  user_email: string;
+  user_id: string;
+  score_id: string;
+  job_title: string;
+  job_company: string;
+  status: string;
+  user_name: string;
+}
+
+interface EvaluationItem {
+  title: string;
+  score: number;
+  description: string;
+  icon: string;
+  skills: string[];
+  detailedAnalysis: Record<string, any>;
+}
+
+interface ScoreData {
+  overallScore: number;
+  evaluation: EvaluationItem[];
+}
+
+interface ResumeEvaluation {
+  _id: string;
+  user_id: string;
+  name: string;
+  last_scored_at: string;
+  score_data: ScoreData;
+}
 
 const Index: React.FC = () => {
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+  const { id } = useParams();
   const { toast } = useToast();
-  const [selectedCandidate, setSelectedCandidate] = useState<CandidateEvaluation | null>(null);
+
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [jobTitle, setJobTitle] = useState("");
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  const [evaluation, setEvaluation] = useState<ResumeEvaluation | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadingEvaluation, setLoadingEvaluation] = useState(false);
 
   const weightMap: Record<string, number> = {
     "Skill Match": 30,
@@ -49,35 +87,86 @@ const Index: React.FC = () => {
     return "bg-red-50 border-red-200";
   };
 
-  // Fetch candidates list
-  const { data: candidates = [], isLoading, error } = useQuery({
-    queryKey: ['candidates'],
-    queryFn: evaluationService.getCandidates,
-  });
+  const fetchApplicants = async () => {
+    try {
+      const res = await fetch(`${API_URL}/applicants/${id || '1'}`);
+      const data = await res.json();
+      console.log("Fetched applicants:", data);
+      setApplicants(data.applicants || []);
+      setJobTitle(data.job_title || "");
+    } catch (error) {
+      console.error("Error fetching applicants:", error);
+      toast({ title: "Error", description: "Failed to load applicants.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleCandidateSelect = (candidateId: string) => {
-    const candidate = candidates.find(c => c._id.$oid === candidateId);
-    if (candidate) {
-      setSelectedCandidate(candidate);
+  const fetchEvaluation = async (applicant: Applicant) => {
+    setSelectedApplicant(applicant);
+    setLoadingEvaluation(true);
+    console.log("Fetching evaluation for applicant:", applicant);
+    try {
+      const res = await fetch(`${API_URL}/score/user/${applicant.user_id}`);
+      const data = await res.json();
+      console.log("Fetched evaluation data:", data);
+      if (data && data.user_id) {
+        setEvaluation(data);
+      } else {
+        setEvaluation(null);
+      }
+    } catch (error) {
+      console.error("Error fetching evaluation:", error);
+      setEvaluation(null);
+    } finally {
+      setLoadingEvaluation(false);
+    }
+  };
+
+  const handleScoreEvaluation = async () => {
+    if (!selectedApplicant) return;
+    setLoadingEvaluation(true);
+    console.log("Generating score for applicant:", selectedApplicant.user_email);
+    try {
+      const res = await fetch(`${API_URL}/score/${selectedApplicant.user_email}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to generate score.");
+      }
+
+      const data = await res.json();
+      console.log("Generated evaluation data:", data);
+      toast({ title: "Success", description: "Evaluation generated successfully." });
+
+      await fetchEvaluation(selectedApplicant);
+    } catch (error: any) {
+      console.error("Error generating evaluation:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to evaluate.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingEvaluation(false);
     }
   };
 
   useEffect(() => {
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load candidates",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
+    fetchApplicants();
+  }, [id]);
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-lg text-slate-600">Loading candidates...</p>
+          <p className="text-lg text-slate-600">Loading applicants...</p>
         </div>
       </div>
     );
@@ -95,7 +184,11 @@ const Index: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold text-slate-900">Candidate Evaluation</h1>
               <p className="text-slate-600">
-                Review and evaluate candidate profiles
+                {jobTitle ? (
+                  <>Reviewing candidates for <span className="font-semibold text-blue-600">{jobTitle}</span></>
+                ) : (
+                  "Review and evaluate candidate profiles"
+                )}
               </p>
             </div>
           </div>
@@ -103,57 +196,52 @@ const Index: React.FC = () => {
       </div>
 
       <div className="flex-1 max-w-7xl mx-auto p-6 flex gap-6 min-h-0">
-        {/* Left Panel - Candidates List */}
+        {/* Left Panel - Applicants List */}
         <div className="w-1/3 flex flex-col min-h-0">
           <Card className="flex-1 bg-white/80 backdrop-blur-sm shadow-xl border-0 flex flex-col">
             <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 flex-shrink-0">
               <CardTitle className="flex items-center gap-2 text-slate-800">
                 <Users className="w-5 h-5" />
-                Candidates ({candidates.length})
+                Candidates ({applicants.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 flex-1 min-h-0">
-              <div className="mb-4">
-                <CandidateSelector
-                  candidates={candidates}
-                  selectedCandidateId={selectedCandidate?._id.$oid || null}
-                  onCandidateSelect={handleCandidateSelect}
-                  isLoading={isLoading}
-                />
-              </div>
+            <CardContent className="p-0 flex-1 min-h-0">
               <div className="h-full overflow-y-auto">
-                {candidates.length === 0 ? (
+                {applicants.length === 0 ? (
                   <div className="p-8 text-center">
                     <User className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                     <p className="text-slate-500">No candidates yet.</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-100">
-                    {candidates.map((candidate) => (
+                    {applicants.map((applicant) => (
                       <div
-                        key={candidate._id.$oid}
+                        key={applicant.application_id}
                         className={`p-4 cursor-pointer transition-all duration-200 hover:bg-slate-50 ${
-                          selectedCandidate?._id.$oid === candidate._id.$oid 
+                          selectedApplicant?.user_id === applicant.user_id 
                             ? "bg-blue-50 border-r-4 border-blue-500" 
                             : ""
                         }`}
-                        onClick={() => setSelectedCandidate(candidate)}
+                        onClick={() => fetchEvaluation(applicant)}
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {candidate.name.split(' ').map(n => n[0]).join('')}
+                            {applicant.user_name.split(' ').map(n => n[0]).join('')}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold text-slate-900 truncate">
-                              {candidate.name}
+                              {applicant.user_name}
                             </div>
                             <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
                               <Mail className="w-3 h-3" />
-                              <span className="truncate">{candidate.user_email}</span>
+                              <span className="truncate">{applicant.user_email}</span>
                             </div>
                             <div className="mt-2">
-                              <Badge variant="default" className="text-xs">
-                                Score: {candidate.score_data.overallScore}%
+                              <Badge 
+                                variant={applicant.status === 'active' ? 'default' : 'secondary'}
+                                className="text-xs"
+                              >
+                                {applicant.status}
                               </Badge>
                             </div>
                           </div>
@@ -172,7 +260,7 @@ const Index: React.FC = () => {
           <Card className="flex-1 bg-white/80 backdrop-blur-sm shadow-xl border-0 flex flex-col min-h-0">
             <CardContent className="p-0 flex-1 min-h-0 overflow-hidden">
               <div className="h-full overflow-y-auto">
-                {!selectedCandidate ? (
+                {!selectedApplicant ? (
                   <div className="flex flex-col items-center justify-center h-full text-center p-8">
                     <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
                       <User className="w-12 h-12 text-slate-400" />
@@ -180,25 +268,32 @@ const Index: React.FC = () => {
                     <h3 className="text-xl font-semibold text-slate-700 mb-2">Select a Candidate</h3>
                     <p className="text-slate-500">Choose a candidate from the list to view their evaluation details.</p>
                   </div>
-                ) : (
+                ) : loadingEvaluation ? (
+                  <div className="flex flex-col items-center justify-center h-full p-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p className="text-slate-600">Loading evaluation...</p>
+                  </div>
+                ) : evaluation ? (
                   <div className="p-6 space-y-6">
                     {/* Profile Header */}
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
                       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                         <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                          {selectedCandidate.name.split(' ').map(n => n[0]).join('')}
+                          {evaluation.name.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div className="flex-1 space-y-3">
-                          <h2 className="text-3xl font-bold text-slate-900">{selectedCandidate.name}</h2>
+                          <h2 className="text-3xl font-bold text-slate-900">{evaluation.name}</h2>
                           <div className="flex flex-wrap gap-4 text-slate-600">
                             <div className="flex items-center gap-2">
                               <Mail className="w-4 h-4" />
-                              <span>{selectedCandidate.user_email}</span>
+                              <span>{selectedApplicant.user_email}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4" />
-                              <span>Last scored: {new Date(selectedCandidate.last_scored_at.$date).toLocaleDateString()}</span>
-                            </div>
+                            {evaluation.last_scored_at && (
+                              <div className="flex items-center gap-2">
+                                <Calendar className="w-4 h-4" />
+                                <span>Last scored: {new Date(evaluation.last_scored_at).toLocaleDateString()}</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <Button 
@@ -217,7 +312,7 @@ const Index: React.FC = () => {
                         <div className="relative">
                           <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
                             <span className="text-2xl font-bold text-white">
-                              {selectedCandidate.score_data.overallScore}%
+                              {evaluation.score_data.overallScore}%
                             </span>
                           </div>
                           <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
@@ -227,11 +322,11 @@ const Index: React.FC = () => {
                         <div className="flex-1">
                           <h3 className="text-2xl font-bold text-slate-900 mb-2">Overall Match Score</h3>
                           <p className="text-slate-600">
-                            This candidate shows a {selectedCandidate.score_data.overallScore >= 80 ? 'strong' : selectedCandidate.score_data.overallScore >= 60 ? 'good' : 'moderate'} match for the position requirements.
+                            This candidate shows a {evaluation.score_data.overallScore >= 80 ? 'strong' : evaluation.score_data.overallScore >= 60 ? 'good' : 'moderate'} match for the position requirements.
                           </p>
                           <div className="mt-3">
                             <Progress 
-                              value={selectedCandidate.score_data.overallScore} 
+                              value={evaluation.score_data.overallScore} 
                               className="h-3 bg-white/50"
                             />
                           </div>
@@ -242,7 +337,7 @@ const Index: React.FC = () => {
                     {/* Evaluation Breakdown */}
                     <div className="grid gap-4">
                       <h3 className="text-xl font-bold text-slate-900 mb-2">Detailed Evaluation</h3>
-                      {selectedCandidate.score_data.evaluation.map((item) => {
+                      {evaluation.score_data.evaluation.map((item) => {
                         const maxScore = weightMap[item.title] || 100;
                         const percentage = Math.round((item.score / maxScore) * 100);
                         const IconComponent = getIconForCategory(item.title);
@@ -314,6 +409,33 @@ const Index: React.FC = () => {
                         );
                       })}
                     </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full gap-6 p-8">
+                    <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center">
+                      <TrendingUp className="w-12 h-12 text-slate-400" />
+                    </div>
+                    <div className="text-center space-y-2">
+                      <h3 className="text-xl font-semibold text-slate-700">No Evaluation Available</h3>
+                      <p className="text-slate-500">Generate an evaluation to see detailed analysis for this candidate.</p>
+                    </div>
+                    <Button
+                      onClick={handleScoreEvaluation}
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-3"
+                      disabled={loadingEvaluation}
+                    >
+                      {loadingEvaluation ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Star className="w-4 h-4 mr-2" />
+                          Score & Evaluate
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
               </div>
